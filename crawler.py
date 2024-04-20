@@ -17,7 +17,7 @@ with open("queries.txt", "r") as file:
 queries = [query.strip() for query in queries]
 visitlog = logging.getLogger('visited')
 extractlog = logging.getLogger('extracted')
-MAX_CRAWL = 100
+MAX_CRAWL = 10
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(BASEDIR, '.env'))
 api_key = os.getenv('SERPAPI_KEY')
@@ -181,7 +181,7 @@ def run():
     seed_links = [link.strip() for link in seed_links]
     links += seed_links
     ###TODO: Change to for loop iterating over list of links
-    visited, extracted = crawl(links[0], ["application/pdf"])
+    visited, extracted = crawl(links[0], ["text/html"])
 
     # site = sys.argv[1]
     # headers_list = []
