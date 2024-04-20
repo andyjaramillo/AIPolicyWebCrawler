@@ -60,7 +60,7 @@ def parse_output():
         if current_line_array[1] == "extracted":
             ## we have a pdf
             links.append(current_line_array[2] + ':' + current_line_array[3])
-    documents = retrieve_PDF_text(links[0], label_counter=label_counter)
+    documents = retrieve_PDF_text(links, label_counter=label_counter) if len(links) > 0 else []
     return documents
     # for link in links:
     #     retrieve_PDF_text(link)

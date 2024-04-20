@@ -164,7 +164,7 @@ def model(pdf_docs_array):
                 results = search(doc_vector, label_vec)
                 doc_metric.append((label, results))
             metrics.append(sorted(doc_metric))
-        print(metrics[0])
+        print(metrics[0] if len(metrics) > 0 else "No metrics found")
         return
 
 
