@@ -9,6 +9,7 @@ def main():
     print("Crawling complete")
     document_array = parse_output()
     print("Parsing complete")
+    print("document_array: ", document_array)
     model([document_array])
 
 

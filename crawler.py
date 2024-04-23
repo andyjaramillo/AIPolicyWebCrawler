@@ -219,7 +219,6 @@ def run():
     
     writelines('visited.txt', visited)
     writelines('extracted.txt', extracted)
-    print('finished crawling')
     return visited,extracted
 
 if __name__ == "__main__":
