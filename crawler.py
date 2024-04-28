@@ -51,7 +51,6 @@ def is_self_referencing(root_href, child_href):
 
 
 def parse_links_sorted(root, html):
-    # TODO: implement
     #priority function: similarity to root
     #We give a url on the start of the program and ask to crawl, it only makes sense to want to crawl
     #everything that is closest to the url given. This is done just by comparison to the root
@@ -60,9 +59,9 @@ def parse_links_sorted(root, html):
     queue = PriorityQueue()
     
     for link_tuple in links:
-        score = similarityComparison(link_tuple[0], root)
-        queue.put((-score, link_tuple))
-    return list(queue.queue)
+        score = similarityComparison(link_tuple[0], root) # link_tuple[0] is the link, link_tuple[1] is the text
+        queue.put((-score, link_tuple[0]))
+    return list(queue.queue) # return a list of tuples (score, link)
 
 
 
@@ -77,8 +76,8 @@ def get_domain(url):
 
 
 def get_links(url):
-    res = request.urlopen(url)
-    return list(parse_links(url, res.read()))
+    res = request.urlopen(url).decode('utf-8')
+    return list(parse_links(url, res.read())) # return a list of tuples (link, html of the url)
 
 
 def get_nonlocal_links(url):
@@ -97,39 +96,44 @@ def get_nonlocal_links(url):
     return filtered
 
 
-def crawl(root, wanted_content):
+def crawl(roots, wanted_content):
     '''Crawl the url specified by `root`.
     `wanted_content` is a list of content types to crawl
     `within_domain` specifies whether the crawler should limit itself to the domain of `root`
     '''
-    # TODO: implement
     queue = Queue()
-    queue.put(root)
+    for root in roots:
+        queue.put(root) # add all the seed links to the queue
 
     visited = []
     extracted = []
     iterator = 0
+    
     while not queue.empty() and iterator < MAX_CRAWL:
         url = queue.get()
         iterator += 1
+        
         if url not in visited: 
+           
             try:
+                print('not visited yet', url)
                 req = request.urlopen(url)
                 try:
                     html = req.read()
                     visited.append(url)
                     visitlog.debug(url)
-                    for ex in extract_pdf_links(url, html):
+                    for ex in extract_pdf_links(url, html): # extract pdf links
                         extracted.append(ex)
                         extractlog.debug(ex)
-                    for score, link in parse_links_sorted(url, html):
+                    for score, links in parse_links_sorted(url, html): # extract links from url
+                        # print('links',links)
                         try:
-                            child_link = request.urlopen(link[0])
+                            child_link = request.urlopen(links[0])
                             if child_link.headers.get('Content-Type').split(';')[0].strip() in wanted_content or len(wanted_content) == 0: 
-                                if link[0] not in visited:
-                                    queue.put(link[0])
+                                if links[0] not in visited:
+                                    queue.put(links[0])
                         except Exception as e:
-                            print(e, link[0])
+                            print(e, links[0])
                         
                 except Exception as e:
                     print(e, url)
@@ -142,10 +146,8 @@ def crawl(root, wanted_content):
 
 
 def extract_pdf_links(address, html):
-    '''Extract contact information from html, returning a list of (url, category, content) pairs,
-    where category is one of PHONE, ADDRESS, EMAIL'''
+    '''Extract pdfs from the html of a linked page'''
 
-    
     soup = BeautifulSoup(html, 'html.parser')
     pdf_links = []
     for link in soup.find_all('a', href=True):
@@ -161,32 +163,50 @@ def writelines(filename, data):
         for d in data:
             print(d, file=fout)
 
+def read_queries_from_file(filename):
+        with open(filename, 'r') as file:
+            queries = file.readlines()
+        return [query.strip() for query in queries]
 
 def run():
     ###TODO Change this to list of queries from queries.txt
+    
+
     params = {
-        "engine" : "google",
-        "q": "Artificial intelligence policy reports",
+        "hl": "en",
+        "gl": "us",
+        "engine": "google_scholar",
+        "q": read_queries_from_file('queries.txt'),
         "api_key": api_key
     }
+    
+    # print(params)
+
     search = GoogleSearch(params)
     results = search.get_dict()
+    # print(results)
     organic_results = results["organic_results"]
-    ### now get the list of links
+    ### now get the list of links from google
+    # print(organic_results)
     links = []
+    pdfs = []
     for result in organic_results:
-        links.append(result["link"])
+        link = result["link"]
+        if not link.endswith('.pdf'):
+            links.append(link)
+        else:
+            pdfs.append(link) # extract pdfs if it is the link
     with open("seed_links.txt", "r") as links_file:
-        seed_links = links_file.readlines()
+        seed_links = links_file.readlines() # put each line of the file into list of strings elements 
     seed_links = [link.strip() for link in seed_links]
     links += seed_links
-    ###TODO: Change to for loop iterating over list of links
-    visited, extracted = crawl(links[0], ["text/html"])
-
-    # site = sys.argv[1]
-    # headers_list = []
-    # links = get_links(site)
-    # writelines('links.txt', links)
+    # print(links)
+    
+    
+    # go through seed links and links extracted from google search
+    visited, extracted = crawl(links, ["text/html"]) # crawl the first 
+    extracted += pdfs
+    writelines('links.txt', links) # see what links extracted from seed links + serpapi
     # nonlocal_links = get_nonlocal_links(site)
     # writelines('nonlocal.txt', nonlocal_links)
     # res = request.urlopen(site)
@@ -197,9 +217,9 @@ def run():
     #     headers_list = header
 
     
-    # writelines('visited.txt', visited)
-    # writelines('extracted.txt', extracted)
-    # return visited,extracted
+    writelines('visited.txt', visited)
+    writelines('extracted.txt', extracted)
+    return visited,extracted
 
 if __name__ == "__main__":
     run()
