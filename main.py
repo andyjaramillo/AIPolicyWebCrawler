@@ -1,9 +1,12 @@
 from crawler import run
 from parser_1 import parse_output
 from model import model
+from crawler import run
+
 
 
 def main():
+
     # call crawl function
     run()
     print("Crawling complete")

@@ -6,6 +6,8 @@ from model import Document
 import nltk
 
 from nltk.tokenize import sent_tokenize
+from model import model
+from crawler import run
 
 
 
@@ -53,7 +55,7 @@ def retrieve_PDF_text(pdf_urls, label_counter):
 def parse_output():
     with open("output.log", "r") as output_file:
         logs = output_file.readlines()
-    output=logs
+    output = logs
     label_counter = 101
     links=[]
     for line in output:
@@ -61,9 +63,11 @@ def parse_output():
         if current_line_array[1] == "extracted":
             ## we have a pdf
             links.append(current_line_array[2] + ':' + current_line_array[3])
-    # print(links)
     print("got here 3")
     documents = retrieve_PDF_text(links, label_counter=label_counter) if len(links) > 0 else []
     return documents
     # for link in links:
     #     retrieve_PDF_text(link)
+
+if __name__ == "__main__":
+    parse_output()
