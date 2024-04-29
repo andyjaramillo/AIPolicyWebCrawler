@@ -6,7 +6,8 @@ import string
 from numpy.linalg import norm
 
 stemmer = SnowballStemmer('english')
-
+WITHIN_PAGE_PROBABILITY_MINIMUM = 0.75
+PDF_LABEL_PROBABILITY = 3
 
 class Document:
     def __init__(self, doc_id: int, text: str, created: str, modified :str , title: str, author: str, url: str):
@@ -144,11 +145,12 @@ def model(pdf_docs_array):
     """
     labels = read_labels_from_file('label.txt')
     terms = read_labels_from_file('key_terms')
-    processed_labels = process_queries_array(labels)
+    processed_labels = process_queries_array(labels) # convert labels to Document objects representing queries
+    pdfs_with_labels = []
     for docs_array in pdf_docs_array:
-        processed_docs = process_docs_array(docs_array)
+        processed_docs = process_docs_array(docs_array) # remove stopwords and stem the docs
 
-        doc_freqs = compute_doc_freqs(processed_docs)
+        doc_freqs = compute_doc_freqs(processed_docs) # compute document frequencies for each term
         doc_vectors = [compute_expo_tfidf(doc, doc_freqs, len(processed_docs), terms) for doc in processed_docs]
 
         metrics = []
@@ -158,14 +160,42 @@ def model(pdf_docs_array):
             Iterate over each doc, and for each doc we go through all labels and calculate probabilities for those
             and append to the labels array
             """
+
             doc_metric = []
             for label in processed_labels:
                 label_vec = compute_expo_tfidf(label, doc_freqs, len(processed_docs), terms=terms)
                 results = search(doc_vector, label_vec)
                 doc_metric.append((label, results))
-            metrics.append(sorted(doc_metric))
-        print(metrics[0] if len(metrics) > 0 else "No metrics found")
-        return
+            metrics.append(doc_metric)
+        
+            """
+            Take top probabilities above 0.75
+            """
+            for element in doc_metric:
+                if element[0] < WITHIN_PAGE_PROBABILITY_MINIMUM:
+                    doc_metric.remove(element)
+            
+            metrics.append(doc_metric)
+        """
+        Perform label congregation
+        """
+        label_to_page = defaultdict(int)
+        for metric in metrics:
+            for label_tuple in metric:
+                label_to_page[label_tuple[0]] += 1
+
+        for label, count in label_to_page.items():
+            if count < PDF_LABEL_PROBABILITY:
+                del label_to_page[label]
+        pdf_docs_array.append(({
+            "title": docs_array[0].title,
+            "created": docs_array[0].created,
+            "modified":docs_array[0].modified,
+            "url": docs_array[0].url
+        },label_to_page))
+        
+    return pdfs_with_labels    
+        
 
 
 

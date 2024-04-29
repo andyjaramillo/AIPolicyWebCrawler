@@ -54,8 +54,8 @@ def parse_links_sorted(root, html):
     #priority function: similarity to root
     #We give a url on the start of the program and ask to crawl, it only makes sense to want to crawl
     #everything that is closest to the url given. This is done just by comparison to the root
-
-    links = get_links(root)
+    print('got here to get links')
+    links = get_links(root) # list of tuples (link, html of the link)
     queue = PriorityQueue()
     
     for link_tuple in links:
@@ -76,7 +76,9 @@ def get_domain(url):
 
 
 def get_links(url):
+    print('inside get_links')
     res = request.urlopen(url).decode('utf-8')
+    print('got html')
     return list(parse_links(url, res.read())) # return a list of tuples (link, html of the url)
 
 
@@ -122,11 +124,13 @@ def crawl(roots, wanted_content):
                     html = req.read()
                     visited.append(url)
                     visitlog.debug(url)
-                    for ex in extract_pdf_links(url, html): # extract pdf links
+                    for ex in extract_pdf_links(url, html): # extract pdf links from visited url
                         extracted.append(ex)
                         extractlog.debug(ex)
-                    for score, links in parse_links_sorted(url, html): # extract links from url
-                        # print('links',links)
+                    print('parsing links in sorted order')
+                    for score, links in parse_links_sorted(url, html): # extract links from vissited url
+                        print('starts here')
+                        print('links', links)
                         try:
                             child_link = request.urlopen(links[0])
                             if child_link.headers.get('Content-Type').split(';')[0].strip() in wanted_content or len(wanted_content) == 0: 
@@ -193,19 +197,19 @@ def run():
     for result in organic_results:
         link = result["link"]
         if not link.endswith('.pdf'):
-            links.append(link)
+            links.append(link) # extract links in the google search
         else:
-            pdfs.append(link) # extract pdfs if it is the link
+            pdfs.append(link) # extract pdfs if it is the seed link
     with open("seed_links.txt", "r") as links_file:
         seed_links = links_file.readlines() # put each line of the file into list of strings elements 
-    seed_links = [link.strip() for link in seed_links]
+    seed_links = [link.strip() for link in seed_links] # extract the links from seed_links.txt
     links += seed_links
     # print(links)
     
     
     # go through seed links and links extracted from google search
-    visited, extracted = crawl(links, ["text/html"]) # crawl the first 
-    extracted += pdfs
+    visited, extracted = crawl(links, ["text/html"]) # crawl the google + seed links for pdfs
+    extracted += pdfs # add pdfs from google search to the extracted list
     writelines('links.txt', links) # see what links extracted from seed links + serpapi
     # nonlocal_links = get_nonlocal_links(site)
     # writelines('nonlocal.txt', nonlocal_links)
