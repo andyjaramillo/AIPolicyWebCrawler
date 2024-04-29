@@ -197,10 +197,6 @@ def model(pdf_docs_array):
     return pdfs_with_labels    
         
 
-
-
-
-
 def search(doc_vector, label_vec):
     score = cosine_sim(label_vec, doc_vector)
     return score
