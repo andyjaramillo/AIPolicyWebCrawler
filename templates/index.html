@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Heatmap in JavaScript</title>
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-core.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-heatmap.min.js"></script> 
+    <style type="text/css">      
+      html, body, #container { 
+        width: 100%; margin: 0; padding: 0;  height: 100%;
+      } 
+    </style>
+  </head>
+  <body>  
+    <div id="container"></div>
+    <script>
+      anychart.onDocumentReady(function () {
+          // Function to create heatmap chart for each dataset
+          function createHeatMap(data) {
+              let chart = anychart.heatMap(data);
+              let colorScale = anychart.scales.ordinalColor();
+              colorScale.ranges([
+                  { less: 1, color: "#B0D8A4" },
+                  { from: 1, to: 3, color: "#FEE191" },
+                  { from: 3, to: 4, color: "#FD8060" },
+                  { greater: 4, color: "#CC333F" }
+              ]);
+              chart.colorScale(colorScale);
+              // name the heatmap
+              chart.title("Graph to represent current document");
+              // set the container for the heatmap
+              chart.container("container-" + Math.floor(Math.random() * 1000)); // Random container ID to avoid conflicts
+              chart.tooltip().title().useHtml(true);
+              chart
+                  .tooltip()
+                  .useHtml(true)
+                  .titleFormat(function () {
+                      return "Accidents - " + this.heat;
+                  })
+                  .format(function () {
+                      return (
+                          '<span style="color: #CECECE">Page Number: </span>' +
+                          this.x +
+                          "<br/>" +
+                          '<span style="color: #CECECE">Labels: </span>' +
+                          this.y
+                      );
+                  });
+              // draw the heatmap
+              chart.draw();
+          }
+  
+          // add the data
+          function getData() {
+              var data = { data };
+              data.forEach(function (dataset) {
+                  createHeatMap(dataset);
+              });
+          }
+  
+          // Call the getData function to create the heatmaps
+         
+      });
+      getData();
+  </script>
+  
+  </body>
+</html>

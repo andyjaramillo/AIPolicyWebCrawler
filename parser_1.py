@@ -45,7 +45,7 @@ def retrieve_PDF_text(pdf_urls, label_counter):
                 page_text = pdf_reader.pages[page_num].extract_text()
                 newDocument = Document(doc_id=label_counter, text=sent_tokenize(page_text), created=time_parse(metadata['/CreationDate']),modified=time_parse(metadata['/CreationDate']), title=metadata['/Title'], author=metadata['/Author'], url=pdf_url)
                 documents.append(newDocument)
-            #     label_counter += 1
+                label_counter += 1
         except Exception as e:
             print("Error to retrive PDF text from ", e, pdf_url)
     
