@@ -269,8 +269,8 @@ def model(pdf_docs_array):
                 for j, term in enumerate(terms):
                     if term in tf_row:
                         tf_array[i, j] = tf_row[term]  
-                    else:
-                        tf_array[i, j] = 0  
+                    # else:
+                    #     tf_array[i, j] = 0  
          #   initial_centroids = np.array([doc_vector.toarray()[np.where(designated_labels_encoded == label)[0]].mean(axis=0) for label in range(num_clusters)])
          
             cntr, u, _, _, _, _, _ = fuzz.cluster.cmeans(tf_array.T, num_clusters, 2, error=0.005, maxiter=1000)
