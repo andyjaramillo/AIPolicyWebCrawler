@@ -316,7 +316,7 @@ def model(pdf_docs_array):
         pdfs_with_labels.append((doc, compute_label_congregation(metrics)))
         data_metrics.append(heat_map_data)
         #print(compute_label_congregation(metrics))
-        # print("done", pdfs_with_labels)
+        print("done", pdfs_with_labels)
     return pdfs_with_labels,data_metrics    
         
 
