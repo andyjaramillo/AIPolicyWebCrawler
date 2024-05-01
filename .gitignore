@@ -26,6 +26,7 @@ Thumbs.db
 
 __pycache__/
 final/
+env/
 
 # Compiled binary files
 *.com

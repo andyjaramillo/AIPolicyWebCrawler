@@ -36,17 +36,20 @@ def retrieve_PDF_text(pdf_urls, label_counter):
             response = request.urlopen(pdf_url)
             pdf_file = BytesIO(response.read()) 
             pdf_reader = PyPDF2.PdfReader(pdf_file) 
-            print("got here last")
             metadata = pdf_reader.metadata
+            print("Pdf pages", len(pdf_reader.pages))
+            print("read pdf file")
         # metadata['/CreationDate']
         # metadata['/Author']
         # metadata['/ModDate']
         # metadata['/Title']
+            # create a new document object for each page in the pdf
             for page_num in range(len(pdf_reader.pages)):
                 page_text = pdf_reader.pages[page_num].extract_text().strip().replace('\n', '').replace('\xa0', ' ') # Extract html from pdf
-                newDocument = Document(doc_id=label_counter, text=sent_tokenize(page_text), created=time_parse(metadata['/CreationDate']),modified=time_parse(metadata['/CreationDate']), title=metadata['/Title'], author=metadata['/Author'], url=pdf_url)
+                newDocument = Document(doc_id=label_counter, text=sent_tokenize(page_text), created=time_parse(metadata['/CreationDate']),modified=time_parse(metadata['/CreationDate']), title=metadata.title, author=metadata.author, url=pdf_url)
                 documents.append(newDocument)
-            #     label_counter += 1
+                label_counter += 1
+            print("extracted metadata from pdf file")
         except Exception as e:
             print("Error to retrive PDF text from ", e, pdf_url)
     
@@ -54,20 +57,18 @@ def retrieve_PDF_text(pdf_urls, label_counter):
 
 
 def parse_output():
-    with open("output.log", "r") as output_file:
-        logs = output_file.readlines()
-    output = logs
+    # with open("extracted.txt", "r") as extracted_file:
+    with open("sample_pdf_test.txt", "r") as extracted_file:
+        logs = extracted_file.readlines()
+    extracted = logs
     label_counter = 101
     pdf_links=[]
-    for line in output:
+    for line in extracted:
         current_line_array = line.strip().split(':')
-        if current_line_array[1] == "extracted":
-            ## we have a pdf
-            pdf_links.append(current_line_array[2] + ':' + current_line_array[3])
-    # print(pdf_links)
-    print("got here 3")
+        pdf_links.append(current_line_array[0] + ':' + current_line_array[1])
+        # print(pdf_links)
+        # print("got here 3")
     documents = retrieve_PDF_text(pdf_links, label_counter=label_counter) if len(pdf_links) > 0 else []
-    print("got here 4")
     return documents
     # for link in links:
     #     retrieve_PDF_text(link)
