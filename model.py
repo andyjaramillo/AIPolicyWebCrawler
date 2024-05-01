@@ -98,7 +98,7 @@ def process_queries_array(query_array):
 
 ### Term-Document Matrix
 
-
+# TODO Isnt this receiving one of the docs from the pdf?
 def compute_doc_freqs(docs: List[Document]):
     '''
     Computes document frequency, i.e. how many documents contain a specific word
@@ -106,9 +106,11 @@ def compute_doc_freqs(docs: List[Document]):
     freq = Counter()
     for doc in docs:
         words = set()
-        for word in doc.title.split():
+        for word in (doc.title or "").split():
+            # include words in the title
             words.add(word)
         for element in doc.text:
+            # add words in the text
             for word in element.split():
                 words.add(word)
         for word in words:
@@ -241,14 +243,17 @@ def model(pdf_docs_array):
     labels = read_labels_from_file('label.txt')
     label_encoder = LabelEncoder()
     designated_labels_encoded = label_encoder.fit_transform(labels)
+    # map the encoded integer to the label
     encoded_int_to_label_map = {encoded_int: label for label,encoded_int in zip(labels, designated_labels_encoded)}
+    # print("test",designated_labels_encoded)
+    # print("encoded",encoded_int_to_label_map)
     processed_labels = process_queries_array(labels)
     pdfs_with_labels = []
     data_metrics = []
-    for docs_array in pdf_docs_array:
-        processed_docs = docs_array
-        doc_freqs = compute_doc_freqs(processed_docs)
-        doc_vectors = [compute_expo_tfidf(doc, doc_freqs, len(processed_docs), labels) for doc in processed_docs]
+    for doc in pdf_docs_array:
+        processed_doc = doc
+        doc_freqs = compute_doc_freqs(processed_doc)
+        doc_vectors = [compute_expo_tfidf(doc, doc_freqs, len(processed_doc), labels) for doc in processed_doc]
         num_clusters = len(labels)
 
         """
@@ -306,11 +311,12 @@ def model(pdf_docs_array):
 
         We have to do one last consolidation, label congregation
         """
-        #print(metrics)
+        # print(metrics)
         #print(compute_label_congregation(metrics))
-        pdfs_with_labels.append((docs_array, compute_label_congregation(metrics)))
+        pdfs_with_labels.append((doc, compute_label_congregation(metrics)))
         data_metrics.append(heat_map_data)
         #print(compute_label_congregation(metrics))
+        print("done", pdfs_with_labels)
     return pdfs_with_labels,data_metrics    
         
 

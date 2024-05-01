@@ -62,18 +62,16 @@ def load_document_array():
 
 
 def main():
-
     # call crawl function
-  #  run()
-  #  print("Crawling complete")
-  #  document_array = parse_output()
-  #  print("Parsing complete")
-  #  print("document_array: ", document_array)
-  #save_document_array(document_array)
-    document_array = load_document_array()
-    #print(document_array)
-    return model([document_array])
+#    run()
+#    print("Crawling complete")
+   document_array = parse_output()
+   print("Parsing complete")
+   save_document_array(document_array)
+   # document_array = load_document_array()
+   #print(document_array)
+   return model([document_array])
 
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()
