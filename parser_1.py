@@ -4,7 +4,7 @@ from io import BytesIO
 from datetime import datetime
 from model import Document
 import nltk
-
+import fitz
 from nltk.tokenize import sent_tokenize
 from model import model
 from crawler import run
@@ -32,7 +32,9 @@ def time_parse(time_string):
 def retrieve_PDF_text(pdf_urls, label_counter):
     documents = []
     for pdf_url in pdf_urls:
+        one_pdf_of_documents = []
         try:
+            print(pdf_url)
             response = request.urlopen(pdf_url)
             pdf_file = BytesIO(response.read()) 
             pdf_reader = PyPDF2.PdfReader(pdf_file) 
@@ -46,10 +48,11 @@ def retrieve_PDF_text(pdf_urls, label_counter):
             # create a new document object for each page in the pdf
             for page_num in range(len(pdf_reader.pages)):
                 page_text = pdf_reader.pages[page_num].extract_text().strip().replace('\n', '').replace('\xa0', ' ') # Extract html from pdf
-                newDocument = Document(doc_id=label_counter, text=sent_tokenize(page_text), created=time_parse(metadata['/CreationDate']),modified=time_parse(metadata['/CreationDate']), title=metadata.title, author=metadata.author, url=pdf_url)
-                documents.append(newDocument)
+                newDocument = Document(doc_id=label_counter, text=sent_tokenize(page_text), created=time_parse(metadata['/CreationDate']),modified=time_parse(metadata['/CreationDate']), title=sent_tokenize(metadata.title), author=metadata.author, url=pdf_url)
+                one_pdf_of_documents.append(newDocument)
                 label_counter += 1
             print("extracted metadata from pdf file")
+            documents.append(one_pdf_of_documents)
         except Exception as e:
             print("Error to retrive PDF text from ", e, pdf_url)
     
