@@ -10,6 +10,7 @@ from nltk.tokenize import word_tokenize
 from collections import defaultdict
 from nltk.stem import WordNetLemmatizer
 import numpy as np
+from parameters import config
 
 stemmer = SnowballStemmer('english')
 WITHIN_PAGE_PROBABILITY_MINIMUM = 0.75
@@ -101,12 +102,6 @@ def process_docs_array(docs_array):
     #processed_docs = stem_docs(processed_docs)
     return processed_docs
 
-def process_queries_array(query_array):
-    doc_id = 1
-    docs = []
-    for query in query_array:
-        docs.append(Document(doc_id=doc_id, text=query, created="", modified="", title="", author="", url=""))
-    return docs
 
 ### Term-Document Matrix
 
@@ -153,11 +148,11 @@ def compute_expo_tfidf(doc, doc_freqs, n, terms):
         # now that the pivot point is denoted, we do exponential decay     
 
         tf_row = {}
-        decay_value = 0.7
+        decay_value = config['decay_value']
         if important_term == True:
              for index , word in enumerate(sentence_array):
                 if ".X" in word:
-                 tf_row[word] = 5
+                 tf_row[word] = config['label_keyword_weight']
                 else:
                   #  tf_row[word] = 0.01
                     x_indices = [i for i, word in enumerate(sentence_array) if ".X" in word]
@@ -166,7 +161,7 @@ def compute_expo_tfidf(doc, doc_freqs, n, terms):
 
         else:
             for word in sentence_array:
-                    tf_row[word] = 0.01
+                    tf_row[word] = config['uniform_decay_value']
         
         doc_list.append(tf_row)
 
@@ -199,11 +194,10 @@ def compute_relevant_labels(docs_array):
         labels_list = doc_map[1]
         for label in labels_list:
             labels[label] += 1
-    print(labels)
     # Sort labels by count in descending order and select top 2
     sorted_labels = sorted(labels.items(), key=lambda x: x[1], reverse=True)
-    top_labels = [label for label, _ in sorted_labels[:2]]
-
+    top_labels = [label for label, _ in sorted_labels[:config['top_number_of_labels_taken']]]
+    print(top_labels)
     return top_labels
 
 
@@ -216,7 +210,7 @@ def compute_doc_label_congregation(metrics):
     }
     """
     labels = dict()
-    threshhold = 0.15
+    threshhold = config['doc_label_congregation_threshhold']
     for label, probability in metrics.items():
         if probability > threshhold:
             labels[label] = probability
@@ -233,7 +227,7 @@ def compute_label_vector_map(labels, processed_docs):
         for arr in doc.title:
             all_sentences.append(arr)
     # Train Word2Vec model
-    model = Word2Vec(sentences=all_sentences, vector_size=5, window=3, min_count=1, workers=4)
+    model = Word2Vec(sentences=all_sentences, vector_size=config['word2vec_vector_size'], window=config['word2vec_window_size'], min_count=1, workers=4)
     label_vectors = defaultdict(dict)
     for sublist in tokenized_labels:
         for label in sublist:
@@ -254,20 +248,20 @@ def compute_label_vector_map(labels, processed_docs):
                     if result > 0.5:
                         ##its similar enough, count it
                         if doc.doc_id in doc_tf_idf:
-                            doc_tf_idf[doc.doc_id] +=1
+                            doc_tf_idf[doc.doc_id] += config['text_weight']
                         else:
-                            doc_tf_idf[doc.doc_id] =1
+                            doc_tf_idf[doc.doc_id] = config['text_weight']
             for element in doc.title:
                 for word in element:
                     vec1 = label_value
                     vec2 = model.wv[word]
                     result = cosine_sim(vec1, vec2)
-                    if result > 0.5:
+                    if result > config['label_vector_cosine_threshhold']:
                         ##its similar enough, count it
                         if doc.doc_id in doc_tf_idf:
-                            doc_tf_idf[doc.doc_id] +=5
+                            doc_tf_idf[doc.doc_id] += config['title_weight']
                         else:
-                            doc_tf_idf[doc.doc_id] =5
+                            doc_tf_idf[doc.doc_id] = config['title_weight']
 
         vector = doc_tf_idf.values()
         label_vector_tfidf[label_key] = vector
