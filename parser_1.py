@@ -30,6 +30,8 @@ def time_parse(time_string):
 
 
 def retrieve_PDF_text(pdf_urls, label_counter):
+    # TODO need to separate documents belonging to different pdfs
+    # list of list where each list contains the documents belonging to a pdf
     documents = []
     for pdf_url in pdf_urls:
         try:
@@ -63,11 +65,13 @@ def parse_output():
     extracted = logs
     label_counter = 101
     pdf_links=[]
+    # put all pdf links in a list
     for line in extracted:
-        current_line_array = line.strip().split(':')
-        pdf_links.append(current_line_array[0] + ':' + current_line_array[1])
+        current_line_array = line.strip()
+        pdf_links.append(current_line_array)
         # print(pdf_links)
         # print("got here 3")
+    # turn the pdf links into documents
     documents = retrieve_PDF_text(pdf_links, label_counter=label_counter) if len(pdf_links) > 0 else []
     return documents
     # for link in links:
