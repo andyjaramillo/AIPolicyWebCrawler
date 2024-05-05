@@ -71,7 +71,7 @@ def main():
    # document_array = load_document_array()
    #print(document_array)
    result = model(document_array)
-   return
+   return result
 
 
 if __name__ == "__main__":

@@ -398,6 +398,7 @@ def model(pdf_docs_array):
 
 
         metrics=[]
+        list_of_label_lengths=[]
         for tuplet in doc_vectors:
             doc_itself = tuplet[0]
             sentence_vector_list = tuplet[1]
@@ -426,6 +427,7 @@ def model(pdf_docs_array):
                 
             associated_labels = compute_doc_label_congregation(doc_to_label_freq)
             metrics.append((doc_itself, associated_labels))
+            list_of_label_lengths.append(len(associated_labels))
 
         """
         [
@@ -436,7 +438,15 @@ def model(pdf_docs_array):
         congregated_labels = compute_relevant_labels(metrics)
         
 
-        pdf_with_labels.append((docs_array, congregated_labels))
+        pdf_with_labels.append(
+            {
+                "docs_array":docs_array, 
+                "labels":congregated_labels,
+                "docs_length": len(docs_array),
+                "label_length" : len(congregated_labels),
+                "list_of_label_lengths": list_of_label_lengths
+            }
+        )
 
 
     return pdf_with_labels
