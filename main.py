@@ -70,7 +70,8 @@ def main():
    save_document_array(document_array)
    # document_array = load_document_array()
    #print(document_array)
-   return model([document_array])
+   result = model(document_array)
+   return result
 
 
 if __name__ == "__main__":
