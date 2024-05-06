@@ -14,6 +14,7 @@ docopt==0.6.2
 executing==2.0.1
 fastjsonschema==2.19.1
 Flask==3.0.3
+gensim==4.3.2
 google-search-results==2.4.2
 idna==3.7
 ipython==8.12.3
@@ -46,6 +47,8 @@ prompt-toolkit==3.0.43
 ptyprocess==0.7.0
 pure-eval==0.2.2
 Pygments==2.17.2
+PyMuPDF==1.24.2
+PyMuPDFb==1.24.1
 PyPDF2==3.0.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
@@ -56,8 +59,9 @@ requests==2.31.0
 rpds-py==0.18.0
 scikit-fuzzy==0.4.2
 scikit-learn==1.4.2
-scipy==1.13.0
+scipy==1.10.1
 six==1.16.0
+smart-open==7.0.4
 soupsieve==2.5
 stack-data==0.6.3
 threadpoolctl==3.4.0
@@ -69,4 +73,5 @@ urllib3==2.2.1
 wcwidth==0.2.13
 webencodings==0.5.1
 Werkzeug==3.0.2
+wrapt==1.16.0
 yarg==0.1.9

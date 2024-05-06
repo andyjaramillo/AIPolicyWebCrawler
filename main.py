@@ -1,8 +1,14 @@
-from crawler import run
 from parser_1 import parse_output
-from model import model, Document
+# from model import model, Document
 from crawler import run
+from model import model, Document
 import ast
+
+#TODO better method for identifying pdf links within html that work (instead of seeing a pdf link, we open it to see if it works and if it does include it as extracted)?
+# still have the word2vec model work since this model relies on comparing similarity of single words and not multiple?
+# NOTE: Use selenium to scrape links that dont work
+# 
+
 
 def save_document_array(document_array):
     # Save document_array to a file
@@ -62,16 +68,17 @@ def load_document_array():
 
 
 def main():
-    # call crawl function
-#    run()
-#    print("Crawling complete")
-   document_array = parse_output()
-   print("Parsing complete")
-   save_document_array(document_array)
-   # document_array = load_document_array()
-   #print(document_array)
-   result = model(document_array)
-   return result
+    # crawl seed links + google search links
+    # run()
+    # print("Crawling complete")
+    # create Document objects from the extracted pdf links
+    document_array = parse_output()
+    print("Parsing complete")
+    # # save document abstractions to file
+    save_document_array(document_array)
+    # # document_array = load_document_array()
+    result = model(document_array)
+    return result
 
 
 if __name__ == "__main__":

@@ -75,9 +75,16 @@ def stem_docs(docs: List[Document]):
     return [stem_doc(doc) for doc in docs]
 
 def remove_stopwords_doc(doc: Document):
+    '''
+    tokenizes the text and title of a document and removes stopwords
+    turns the sentences in text and title into a list of words (a doc is a list of sentences where each sentence is a list of words)
+    returns a new Document object with tokenized(list of words) text and title
+    '''
     sentences = []
     title_sentences=[]
+    # turn the sentences into a list of words
     for sentence in doc.text:
+        # print(sentence)
         sentence_words = word_tokenize(sentence)
         sentence_words = [word for word in sentence_words if word.lower() not in stopwords]
         sentences.append(sentence_words)
@@ -91,27 +98,36 @@ def remove_stopwords_doc(doc: Document):
                     title=title_sentences, 
                     text = sentences)
 
-def remove_stopwords(docs: List[Document]):
-    return [remove_stopwords_doc(doc) for doc in docs]
+def remove_stopwords(pdf: List[Document]):
+    '''
+    Removes stopwords from a each document in a PDF
+    '''
+    return [remove_stopwords_doc(doc) for doc in pdf]
 
 
 
-def process_docs_array(docs_array):
-
-    processed_docs = remove_stopwords(docs_array)
+def process_pdf(pdf):
+    '''
+    Processes a PDF document by removing stopwords and stemming words
+    Each pdf is a list of Document objects
+    returns a list of Document objects where the text and title have been processed ()
+    '''
+    processed_pdf = remove_stopwords(pdf)
     #processed_docs = stem_docs(processed_docs)
-    return processed_docs
+    return processed_pdf
 
 
 ### Term-Document Matrix
 
 
-def compute_doc_freqs(docs: List[Document]):
+def compute_doc_freqs(pdf: List[Document]):
     '''
     Computes document frequency, i.e. how many documents contain a specific word
+    Returns a dictionary where the key is the word and the value is the number of documents containing the word
     '''
     freq = Counter()
-    for doc in docs:
+    for doc in pdf:
+        # find the frequency of each unique word in the document for all documents in the pdf
         words = set()
         for element_title in doc.title:
             for word in element_title:
@@ -217,31 +233,45 @@ def compute_doc_label_congregation(metrics):
     return labels
 
 
-def compute_label_vector_map(labels, processed_docs):
-    ## turn labels into vector representation using the whole corpu
+def compute_label_vector_map(labels, processed_pdf):
+    ## turn labels into vector representation using the whole corpus
+    # print(labels)
     tokenized_labels = [word_tokenize(label.lower()) for label in labels]
+    # print(tokenized_labels)
     all_sentences  = []
-    for doc in processed_docs:
+    # combine all sentences in the pdf
+    for doc in processed_pdf:
+        # print(doc.text)
         for sentence_array in doc.text:
             all_sentences.append(sentence_array)
         for arr in doc.title:
             all_sentences.append(arr)
-    # Train Word2Vec model
+    # Train Word2Vec model in order to obtain 
+    # train a model on a set of sentences (all_sentences).
+    # The vector_size parameter determines the size of the word vectors.
+    # The window parameter determines the number of context words to observe in each direction.
+    # The min_count parameter specifies the minimum frequency a word must have to be included in the vocabulary.
+    # The workers parameter determines the number of extra threads to use for training, which can speed up processing on multi-core machines
+        # TODO try different vector size
+        # TODO try different window size
     model = Word2Vec(sentences=all_sentences, vector_size=config['word2vec_vector_size'], window=config['word2vec_window_size'], min_count=1, workers=4)
     label_vectors = defaultdict(dict)
     for sublist in tokenized_labels:
         for label in sublist:
             if label in model.wv:
-                label_vectors[label] = model.wv[label]
 
+                label_vectors[label] = model.wv[label]
+    # print(label_vectors)
 
     ##now we do cosine sim and tf idf COMBINED
     label_vector_tfidf = defaultdict()
     for label_key, label_value in label_vectors.items():
+        # print("key and value", label_key, label_value)
         doc_tf_idf = defaultdict()
-        for doc in processed_docs:
+        for doc in processed_pdf:
             for sentence_array in doc.text:
                 for word in sentence_array:
+                    # represents the how 
                     vec1 = label_value
                     vec2 = model.wv[word]
                     result = cosine_sim(vec1, vec2)
@@ -380,21 +410,20 @@ def cosine_sim(x, y):
     return num / ((norm(list(x))) * norm(list(y)))
 
 
-def model(pdf_docs_array):
+def model(pdf_array):
     """
-        pdf_docs_array: a list of formatted pdfs
+        pdf_array: a list of formatted pdfs
         Each pdf, rather than the raw doc, is an array of individual
         Document objects, and in each are the text and metadata
     """
     labels = read_labels_from_file('label.txt')
     pdf_with_labels = []
-    for docs_array in pdf_docs_array:
-        processed_docs = process_docs_array(docs_array)
-        doc_freqs = compute_doc_freqs(processed_docs)
-        label_vector_map = compute_label_vector_map(labels, processed_docs)
-        doc_vectors = [compute_expo_tfidf(doc, doc_freqs, len(processed_docs), label_vector_map.keys()) for doc in processed_docs]
-        
-
+    # create doc vectors for each document in the pdf
+    for pdf in pdf_array:
+        processed_pdf = process_pdf(pdf)
+        pdf_doc_freqs = compute_doc_freqs(processed_pdf)
+        label_vector_map = compute_label_vector_map(labels, processed_pdf)
+        doc_vectors = [compute_expo_tfidf(doc, pdf_doc_freqs, len(processed_pdf), label_vector_map.keys()) for doc in processed_pdf]
 
 
         metrics=[]
@@ -440,9 +469,9 @@ def model(pdf_docs_array):
 
         pdf_with_labels.append(
             {
-                "docs_array":docs_array, 
+                "docs_array":pdf, 
                 "labels":congregated_labels,
-                "docs_length": len(docs_array),
+                "docs_length": len(pdf),
                 "label_length" : len(congregated_labels),
                 "list_of_label_lengths": list_of_label_lengths
             }

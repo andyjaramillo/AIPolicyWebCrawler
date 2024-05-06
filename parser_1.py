@@ -4,11 +4,16 @@ from io import BytesIO
 from datetime import datetime
 from model import Document
 import nltk
-import fitz
 from nltk.tokenize import sent_tokenize
-from model import model
-from crawler import run
 
+def extract_bookmarks(pdf_file):
+    reader = PyPDF2.PdfReader(pdf_file)
+    bookmarks = []
+    for page in range(len(reader.pages)):
+        page = reader.pages(page)
+        if '/Outlines' in page:
+            bookmarks += reader.getDestinationPageNumbers()
+    return bookmarks
 
 
 def time_parse(time_string):
@@ -30,19 +35,20 @@ def time_parse(time_string):
 
 
 def retrieve_PDF_text(pdf_urls, label_counter):
-    # TODO need to separate documents belonging to different pdfs
     # list of list where each list contains the documents belonging to a pdf
     documents = []
     for pdf_url in pdf_urls:
         one_pdf_of_documents = []
         try:
-            print(pdf_url)
             response = request.urlopen(pdf_url)
+            # .read() returns binary data of a file
             pdf_file = BytesIO(response.read()) 
             pdf_reader = PyPDF2.PdfReader(pdf_file) 
             metadata = pdf_reader.metadata
-            print("Pdf pages", len(pdf_reader.pages))
-            print("read pdf file")
+            # bookmarks = extract_bookmarks(pdf_file)
+            # print("extracted bookmarks from pdf file", bookmarks)
+            # print("Pdf pages", len(pdf_reader.pages))
+            # print("read pdf file")
         # metadata['/CreationDate']
         # metadata['/Author']
         # metadata['/ModDate']
@@ -56,7 +62,7 @@ def retrieve_PDF_text(pdf_urls, label_counter):
             print("extracted metadata from pdf file")
             documents.append(one_pdf_of_documents)
         except Exception as e:
-            print("Error to retrive PDF text from ", e, pdf_url)
+            print("Error to retrive PDF text from ", pdf_url, e)
     
     return documents
 
@@ -64,6 +70,7 @@ def retrieve_PDF_text(pdf_urls, label_counter):
 def parse_output():
     # with open("extracted.txt", "r") as extracted_file:
     with open("sample_pdf_test.txt", "r") as extracted_file:
+        # logs is a list of pdf links
         logs = extracted_file.readlines()
     extracted = logs
     label_counter = 101
