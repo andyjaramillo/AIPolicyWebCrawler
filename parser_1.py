@@ -60,8 +60,8 @@ def retrieve_PDF_text(pdf_urls, label_counter):
 
 
 def parse_output():
-    # with open("extracted.txt", "r") as extracted_file:
-    with open("sample_pdf_test.txt", "r") as extracted_file:
+    with open("extracted.txt", "r") as extracted_file:
+    # with open("sample_pdf_test.txt", "r") as extracted_file:
         logs = extracted_file.readlines()
     extracted = logs
     label_counter = 101

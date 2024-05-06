@@ -10,32 +10,61 @@
       } 
     </style>
     <script id="data">
-      {{data | safe}}
+      {{data | tojson}}
     </script>
   </head>
   <body>  
     <div id="container"></div>
     <script>
       anychart.onDocumentReady(function () {
-          let chart = anychart.heatMap(getData());
-
-          chart.title("Distribution of Labeling across pages");
-
-          chart.container("container");
-
-          chart.draw();
-        
+        var topics =[
+              "virtual", 
+              "reality",
+              "vr",
+              "artificial",
+              "Intelligence",
+              "Biotechnology",
+              "ChatGPT",
+              "machine",
+              "learning",
+              "privacy",
+              "health",
+              "education",
+              "cybersecurity",
+              "robotics",
+              "finance",
+              "space",
+              "autonomous",
+              "vehicles"
+             ];
+          var anychart_dictionary = {};
+          let data_label_dict = getData();
+          data_label_dict = JSON.parse(data_label_dict)
+        for (var i = 0; i < topics.length; i++) {
+            if (data_label_dict.hasOwnProperty(topics[i])){
+              console.log("made it")
+              anychart_dictionary[topics[i]] = data_label_dict[topics[i]]
+            }
+        }
+        Object.entries(anychart_dictionary).forEach(([label, value]) => {
+            console.log("Label:", label);
+            console.log("Value:", value);
+            let chart = anychart.heatMap(value);
+            chart.title(label)
+            chart.container("container");
+            chart.draw();
+        })
+      
       });
 
       function getData(){
         var dataElement = document.querySelector('#data');
         var data = null;
-        
         if(dataElement) {
             // Check if the element exists
             data = JSON.parse(dataElement.textContent || "");
         }
-        console.log(data)
+     
         return data;
       }
       

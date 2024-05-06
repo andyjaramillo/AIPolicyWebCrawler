@@ -3,7 +3,6 @@ VR
 Artificial Intelligence
 Biotechnology
 ChatGPT
-Data Ethics
 Machine Learning
 Privacy
 Health
@@ -13,4 +12,3 @@ Robotics
 Finance
 Space
 Autonomous Vehicles
-Environment Science

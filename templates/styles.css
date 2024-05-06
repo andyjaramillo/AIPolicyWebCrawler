@@ -1,0 +1,9 @@
+.chart-row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.chart-row > div {
+    width: calc(50% - 10px); /* Adjust the width as needed */
+    margin: 5px;
+}
