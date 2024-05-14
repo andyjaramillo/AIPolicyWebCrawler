@@ -86,7 +86,6 @@ def remove_stopwords_doc(doc: Document, labels):
                 if merged_word in labels:
                     sentence_words[i:i + 2] = [merged_word]
         sentences.append(sentence_words)
-
     for element in doc.title:
         sentence_words = word_tokenize(element.lower())  # Convert to lowercase during tokenization
         sentence_words = [word for word in sentence_words if word.lower() not in stopwords and word.lower() not in string.punctuation]
@@ -482,9 +481,10 @@ def model(pdf_docs_array):
         Document objects, and in each are the text and metadata
     """
     labels = read_labels_from_file('label.txt')
+    multi_word = read_labels_from_file('multi_word_phrases.txt')
     pdf_with_labels = []
     for docs_array in pdf_docs_array:
-        processed_docs = process_docs_array(docs_array, labels)
+        processed_docs = process_docs_array(docs_array, multi_word)
         doc_freqs = compute_doc_freqs(processed_docs)
         label_vector_map_tuple = compute_label_vector_map(labels, processed_docs)
         doc_vectors = [compute_expo_tfidf(doc, doc_freqs, len(processed_docs), label_vector_map_tuple[1]) for doc in processed_docs]
