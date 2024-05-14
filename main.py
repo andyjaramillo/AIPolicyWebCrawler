@@ -63,11 +63,11 @@ def load_document_array():
 
 def main():
     # call crawl function
-#    run()
+   run()
 #    print("Crawling complete")
    document_array = parse_output()
    print("Parsing complete")
-   save_document_array(document_array)
+   #save_document_array(document_array)
    # document_array = load_document_array()
    #print(document_array)
    result = model(document_array)

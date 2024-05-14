@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Heatmap in JavaScript</title>
+    <title>AI Policy Label Model</title>
     <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-core.min.js"></script>
     <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-heatmap.min.js"></script> 
     <style type="text/css">      
@@ -12,18 +12,54 @@
         height: 100%;
         display: flex; /* Use flexbox for layout */
         flex-wrap: wrap; /* Allow items to wrap */
-      } 
+      } .header {
+      width: 100%; /* Full width header */
+      text-align: center; /* Center-align header text */
+      background-color: #f0f0f0; /* Light gray background color */
+    }
       .chart-container {
         width: 50%; /* Two columns */
         box-sizing: border-box; /* Include padding and border in the width */
         padding: 10px; /* Add some padding between charts */
       }
+      .document-header{
+        width: 50%; /* Full width header */
+        text-align: left; /* Center-align header text */
+        display: flex;
+      }
+      .item{
+        color:black
+      }
     </style>
     <script id="data">
-      {{data | tojson}}
+      {{data| tojson  }}
     </script>
+    <div class="header">
+      <h1>AI Policy Label Model</h1>
+      <h2 class="document-header">Documents Visited</h2>
+      <h3 class="document-header" id="document-header">
+      </h3>
+      <script>
+        var dataElement = document.querySelector('#data');
+        var doc_header = document.getElementById('document-header');
+        json_data = JSON.parse(dataElement.textContent || "");
+        json_data = JSON.parse(json_data)
+        const pdf_names = json_data['names'].split(';')
+        const pdf_urls = json_data['urls'].split(',')
+        console.log(pdf_names)
+        console.log(pdf_urls)
+        pdf_names.forEach(function(name, index) {
+            console.log(name, index)
+            const div = document.createElement('div');
+            div.classList.add('item');
+            div.innerHTML = `<a href=${pdf_urls[index]} target="_blank">${name}</a>`;
+            doc_header.appendChild(div);
+        });
+       </script>
+    </div>
   </head>
   <body>  
+    
     <script>
       anychart.onDocumentReady(function () {
         var topics =[
@@ -31,8 +67,8 @@
               "reality",
               "vr",
               "artificial",
-              "Intelligence",
-              "Biotechnology",
+              "intelligence",
+              "biotechnology",
               "ChatGPT",
               "machine",
               "learning",
@@ -48,7 +84,6 @@
              ];
         var anychart_dictionary = {};
         let data_label_dict = getData();
-        data_label_dict = JSON.parse(data_label_dict)
         for (var i = 0; i < topics.length; i++) {
             if (data_label_dict.hasOwnProperty(topics[i])){
               console.log("made it")
@@ -63,6 +98,14 @@
             var container = document.createElement('div');
             container.className = 'chart-container'; // Apply class for styling
             document.body.appendChild(container); // Append the container to the body
+            chart
+              .tooltip()
+              .useHtml(true)
+              .titleFormat(function () {
+                return "Average Labels - " + this.heat;
+              })
+            chart.yAxis().labels().enabled(false);
+            chart.yAxis().title("Average # of Labels");
             chart.container(container); // Set the chart container
             chart.draw();
         })
@@ -75,7 +118,9 @@
             // Check if the element exists
             data = JSON.parse(dataElement.textContent || "");
         }
-        return data;
+        data = JSON.parse(data);
+ 
+        return data['final_dict'];
       }
     </script>
   </body>

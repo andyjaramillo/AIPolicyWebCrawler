@@ -74,31 +74,43 @@ def stem_doc(doc: Document):
 def stem_docs(docs: List[Document]):
     return [stem_doc(doc) for doc in docs]
 
-def remove_stopwords_doc(doc: Document):
+def remove_stopwords_doc(doc: Document, labels):
     sentences = []
     title_sentences=[]
     for sentence in doc.text:
-        sentence_words = word_tokenize(sentence)
-        sentence_words = [word for word in sentence_words if word.lower() not in stopwords]
+        sentence_words = word_tokenize(sentence.lower())  # Convert to lowercase during tokenization
+        sentence_words = [word for word in sentence_words if word.lower() not in stopwords and word.lower() not in string.punctuation]
+        for i,word in enumerate(sentence_words):
+            if i < len(sentence_words)-1:
+                merged_word = word + "_" + sentence_words[i + 1]
+                if merged_word in labels:
+                    sentence_words[i:i + 2] = [merged_word]
         sentences.append(sentence_words)
-    for element in doc.title:        
-        sentence_words = word_tokenize(element)
-        sentence_words = [word for word in sentence_words if word.lower() not in stopwords]
+
+    for element in doc.title:
+        sentence_words = word_tokenize(element.lower())  # Convert to lowercase during tokenization
+        sentence_words = [word for word in sentence_words if word.lower() not in stopwords and word.lower() not in string.punctuation]
+        for i,word in enumerate(sentence_words):
+            if i < len(sentence_words)-1:
+                merged_word = word + "_" + sentence_words[i + 1]
+                if merged_word in labels:
+                    sentence_words[i:i + 2] = [merged_word]
         title_sentences.append(sentence_words)
+
 
     return Document(doc_id=doc.doc_id, created=doc.created, modified=doc.modified, url=doc.url ,
                     author=doc.author,
                     title=title_sentences, 
                     text = sentences)
 
-def remove_stopwords(docs: List[Document]):
-    return [remove_stopwords_doc(doc) for doc in docs]
+def remove_stopwords(docs: List[Document], labels):
+    return [remove_stopwords_doc(doc, labels) for doc in docs]
 
 
 
-def process_docs_array(docs_array):
+def process_docs_array(docs_array ,labels):
 
-    processed_docs = remove_stopwords(docs_array)
+    processed_docs = remove_stopwords(docs_array ,labels)
     #processed_docs = stem_docs(processed_docs)
     return processed_docs
 
@@ -126,51 +138,120 @@ def compute_doc_freqs(docs: List[Document]):
     return freq
 
 
-def compute_expo_tfidf(doc, doc_freqs, n, terms):
+def compute_expo_tfidf(doc, doc_freqs, n, word_vectors):
     # we need doc frequency and term frequency
 
     doc_list = []
     
+    # for sentence in doc.text:
+    #     sentence_array = sentence
+    #     important_term = False
+    #     for i, word in enumerate(sentence_array):
+    #         for term in terms:
+    #             if term in word:
+    #                 sentence_array[i] += ".X"
+    #                 important_term = True
+    #         # if word in terms:
+    #         #     print(word)
+    #         #     sentence_array[i] += ".X"
+    #         #     important_term = True
+                
+
+    #     # now that the pivot point is denoted, we do exponential decay     
+
+    #     tf_row = {}
+    #     decay_value = config['decay_value']
+    #     if important_term == True:
+    #          for index , word in enumerate(sentence_array):
+    #             if ".X" in word:
+    #              tf_row[word.replace(".X", "")] = config['label_keyword_weight']
+    #             else:
+    #               #  tf_row[word] = 0.01
+    #                 x_indices = [i for i, word in enumerate(sentence_array) if ".X" in word]
+    #                 decay_values = [1/(abs(x_indi - index) * decay_value) for x_indi in x_indices]
+    #                 tf_row[word.replace(".X", "")] = sum(decay_values)/len(decay_values)
+
+    #     else:
+    #         for word in sentence_array:
+    #                 tf_row[word.replace(".X", "")] = config['uniform_decay_value']
+        
+    #     doc_list.append(tf_row)
+
+    # for i,sentence in enumerate(doc_list):
+    #     for word,weight in sentence.items():
+    #         if word in doc_freqs:
+    #             doc_list[i][word] = (weight *  math.log2((n/doc_freqs[word])))
+    
+    # for sentence in doc.text:
+    #     sentence_array = sentence
+    #     important_term = False
+    #     for i, word in enumerate(sentence_array):
+    #         if ".X" in word:
+    #             sentence_array[i] = word.replace(".X", "")
+
+
+
+
+
+
+
+
+
+
     for sentence in doc.text:
         sentence_array = sentence
         important_term = False
         for i, word in enumerate(sentence_array):
-            for term in terms:
-                if term in word:
-                    sentence_array[i] += ".X"
-                    important_term = True
-            # if word in terms:
-            #     print(word)
-            #     sentence_array[i] += ".X"
-            #     important_term = True
-                
+            if '.X' in word:
+                important_term = True
 
-        # now that the pivot point is denoted, we do exponential decay     
-
+        # Now that the pivot point is denoted, we do exponential decay     
         tf_row = {}
         decay_value = config['decay_value']
-        if important_term == True:
-             for index , word in enumerate(sentence_array):
-                if ".X" in word:
-                 tf_row[word] = config['label_keyword_weight']
-                else:
-                  #  tf_row[word] = 0.01
-                    x_indices = [i for i, word in enumerate(sentence_array) if ".X" in word]
-                    decay_values = [1/(abs(x_indi - index) * decay_value) for x_indi in x_indices]
-                    tf_row[word] = sum(decay_values)/len(decay_values)
-
+        if important_term:
+            x_indices = [i for i, word in enumerate(sentence_array) if ".X" in word]
+            if x_indices:  # Check if x_indices is not empty
+                for index, word in enumerate(sentence_array):
+                    if ".X" in word:
+                        tf_row[word.replace(".X", "")] = config['label_keyword_weight']
+                    else:
+                        decay_values = [1/(abs(x_indi - index) * decay_value) for x_indi in x_indices]
+                        tf_row[word] = sum(decay_values) / len(decay_values)
+            else:
+                for word in sentence_array:
+                    tf_row[word] = config['uniform_decay_value']
         else:
             for word in sentence_array:
-                    tf_row[word] = config['uniform_decay_value']
-        
+                tf_row[word] = config['uniform_decay_value']
+
         doc_list.append(tf_row)
 
+    # Incorporate doc.title into the weighting schema
     for i,sentence in enumerate(doc_list):
-        for word,weight in sentence.items():
+        for word, weight in sentence.items():
             if word in doc_freqs:
-                doc_list[i][word] = (weight *  math.log2((n/doc_freqs[word])))
-   
+                doc_list[i][word] = (weight * math.log2(n / doc_freqs[word]))
+
+    # Process doc.title
+    title_array = doc.title
+    for i, sentence in enumerate(title_array):
+        for word in sentence:
+            if word in doc_freqs:
+                title_weight = config['title_weight'] * math.log2(n / doc_freqs[word])
+                # Add title weight to corresponding words in doc_list
+                for sentence in doc_list:
+                    if word in sentence:
+                        sentence[word] += title_weight
+
+
+
+
+
+
     return (doc, doc_list)
+
+
+
     
     
         
@@ -195,9 +276,21 @@ def compute_relevant_labels(docs_array):
         for label in labels_list:
             labels[label] += 1
     # Sort labels by count in descending order and select top 2
-    sorted_labels = sorted(labels.items(), key=lambda x: x[1], reverse=True)
-    top_labels = [label for label, _ in sorted_labels[:config['top_number_of_labels_taken']]]
-    print(top_labels)
+    # Assuming you have a dictionary named label_counts where keys are labels and values are counts
+
+# Get unique frequencies
+    unique_frequencies = set(labels.values())
+
+    # Sort unique frequencies in descending order
+    sorted_frequencies = sorted(unique_frequencies, reverse=True)
+
+    # Get the top 2 highest frequencies
+    top_2_frequencies = sorted_frequencies[:2]
+
+    # Get all labels with the top 2 highest frequencies
+    top_labels = [label for label, count in labels.items() if count in top_2_frequencies]
+    #top_labels = [label for label, _ in sorted_labels[:config['top_number_of_labels_taken']]]
+  
     return top_labels
 
 
@@ -210,6 +303,7 @@ def compute_doc_label_congregation(metrics):
     }
     """
     labels = dict()
+    print(metrics)
     threshhold = config['doc_label_congregation_threshhold']
     for label, probability in metrics.items():
         if probability > threshhold:
@@ -247,6 +341,7 @@ def compute_label_vector_map(labels, processed_docs):
                     result = cosine_sim(vec1, vec2)
                     if result > 0.5:
                         ##its similar enough, count it
+                        word = word + '.X'
                         if doc.doc_id in doc_tf_idf:
                             doc_tf_idf[doc.doc_id] += config['text_weight']
                         else:
@@ -326,7 +421,7 @@ def compute_label_vector_map(labels, processed_docs):
     #     # Update label_vectors with the embedding
     #     label_vectors[label]= embedding
 
-    return label_vectors
+    return (label_vectors, model)
 
 # def convert_doc_vector_for_heat_map(matrix_tuplet):
 #     """
@@ -389,11 +484,11 @@ def model(pdf_docs_array):
     labels = read_labels_from_file('label.txt')
     pdf_with_labels = []
     for docs_array in pdf_docs_array:
-        processed_docs = process_docs_array(docs_array)
+        processed_docs = process_docs_array(docs_array, labels)
         doc_freqs = compute_doc_freqs(processed_docs)
-        label_vector_map = compute_label_vector_map(labels, processed_docs)
-        doc_vectors = [compute_expo_tfidf(doc, doc_freqs, len(processed_docs), label_vector_map.keys()) for doc in processed_docs]
-        
+        label_vector_map_tuple = compute_label_vector_map(labels, processed_docs)
+        doc_vectors = [compute_expo_tfidf(doc, doc_freqs, len(processed_docs), label_vector_map_tuple[1]) for doc in processed_docs]
+       
 
 
 
@@ -414,16 +509,16 @@ def model(pdf_docs_array):
             ]
             """
             doc_to_label_freq = dict()
-            for label  in label_vector_map.keys():
+            for label  in label_vector_map_tuple[0].keys():
                 probabilities_map = dict()
                 for sentence_map in sentence_vector_list:
-                    label_vector = label_vector_map[label]
+                    label_vector = label_vector_map_tuple[0][label]
                     probability = cosine_sim(label_vector, sentence_map.values())
                     probabilities_map[label] = probability
                 if len(probabilities_map) > 0:
                     label_average = sum(probabilities_map.values())/len(probabilities_map.values())
 
-                doc_to_label_freq[label] = label_average
+                    doc_to_label_freq[label] = label_average
                 
             associated_labels = compute_doc_label_congregation(doc_to_label_freq)
             metrics.append((doc_itself, associated_labels))
@@ -447,6 +542,7 @@ def model(pdf_docs_array):
                 "list_of_label_lengths": list_of_label_lengths
             }
         )
+        print(list_of_label_lengths)
 
 
     return pdf_with_labels

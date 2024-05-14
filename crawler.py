@@ -17,7 +17,7 @@ with open("queries.txt", "r") as file:
 queries = [query.strip() for query in queries]
 visitlog = logging.getLogger('visited')
 extractlog = logging.getLogger('extracted')
-MAX_CRAWL = 10
+MAX_CRAWL = 5
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(BASEDIR, '.env'))
 api_key = os.getenv('SERPAPI_KEY')
@@ -200,16 +200,18 @@ def run():
             links.append(link) # extract links in the google search
         else:
             pdfs.append(link) # extract pdfs if it is the seed link
-    with open("seed_links.txt", "r") as links_file:
-        seed_links = links_file.readlines() # put each line of the file into list of strings elements 
-    seed_links = [link.strip() for link in seed_links] # extract the links from seed_links.txt
-    links += seed_links
+    print(links)
+    # with open("seed_links.txt", "r") as links_file:
+    #     seed_links = links_file.readlines() # put each line of the file into list of strings elements 
+    # seed_links = [link.strip() for link in seed_links] # extract the links from seed_links.txt
+    # links += seed_links
     # print(links)
     
     
     # go through seed links and links extracted from google search
     visited, extracted = crawl(links, ["text/html"]) # crawl the google + seed links for pdfs
     extracted += pdfs # add pdfs from google search to the extracted list
+    
     writelines('links.txt', links) # see what links extracted from seed links + serpapi
     # nonlocal_links = get_nonlocal_links(site)
     # writelines('nonlocal.txt', nonlocal_links)
@@ -222,7 +224,7 @@ def run():
 
     
     writelines('visited.txt', visited)
-    writelines('extracted.txt', extracted)
+    writelines('extracted.txt', set(extracted))
     return visited,extracted
 
 if __name__ == "__main__":

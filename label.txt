@@ -1,14 +1,14 @@
-Virtual Reality
-VR
-Artificial Intelligence
+virtual_reality
+vr
+artificial_intelligence
 Biotechnology
 ChatGPT
-Machine Learning
-Privacy
-Health
-Education
-Cybersecurity
-Robotics
-Finance
-Space
-Autonomous Vehicles
+machine_learning
+privacy
+health
+education
+cybersecurity
+robotics
+finance
+space
+autonomous_vehicles

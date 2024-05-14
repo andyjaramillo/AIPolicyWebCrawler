@@ -22,9 +22,9 @@ def format_data(data):
               "reality",
               "vr",
               "artificial",
-              "Intelligence",
-              "Biotechnology",
-              "ChatGPT",
+              "intelligence",
+              "biotechnology",
+              "chatgpt",
               "machine",
               "learning",
               "privacy",
@@ -40,7 +40,6 @@ def format_data(data):
     result_dict = defaultdict(list)
     for label in topics:
         for pdf in data:
-            print(pdf["labels"])
             if label in pdf["labels"]:
                 result_dict[label].append(pdf) 
     final_dict = defaultdict()
@@ -53,7 +52,9 @@ def format_data(data):
             average_label_length += docs["label_length"]
             matrixLabels.append(docs["list_of_label_lengths"]) 
         average_length_of_docs = int(average_length_of_docs / len(data))
-        matrix = np.array(matrixLabels)
+        max_length = max(len(sublist) for sublist in matrixLabels)
+        padded_list = [sublist + [0] * (max_length - len(sublist)) for sublist in matrixLabels]
+        matrix = np.array(padded_list)
         transposed_matrix = matrix.T
         averageLabels=[]
         for doc_label_bins in transposed_matrix:
@@ -69,7 +70,16 @@ def format_data(data):
             else:
                 data_dict.append({"x": str(i), "y": str(0),"heat": 0})
         final_dict[label_] = data_dict
-    return json.dumps(final_dict)
+    pdf_names = ''
+    pdf_urls = ''
+    for pdf in data:
+        pdf_names += ' '.join(pdf['docs_array'][0].title) + ';'
+        pdf_urls += pdf['docs_array'][0].url + ','
+    return json.dumps({
+        'final_dict':final_dict,
+        'names': pdf_names,
+        'urls': pdf_urls
+        })
 
     # matrixLabels=[]
     # for pdf_dict in data:
