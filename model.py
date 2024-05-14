@@ -80,20 +80,10 @@ def remove_stopwords_doc(doc: Document, labels):
     for sentence in doc.text:
         sentence_words = word_tokenize(sentence.lower())  # Convert to lowercase during tokenization
         sentence_words = [word for word in sentence_words if word.lower() not in stopwords and word.lower() not in string.punctuation]
-        for i,word in enumerate(sentence_words):
-            if i < len(sentence_words)-1:
-                merged_word = word + "_" + sentence_words[i + 1]
-                if merged_word in labels:
-                    sentence_words[i:i + 2] = [merged_word]
         sentences.append(sentence_words)
     for element in doc.title:
         sentence_words = word_tokenize(element.lower())  # Convert to lowercase during tokenization
         sentence_words = [word for word in sentence_words if word.lower() not in stopwords and word.lower() not in string.punctuation]
-        for i,word in enumerate(sentence_words):
-            if i < len(sentence_words)-1:
-                merged_word = word + "_" + sentence_words[i + 1]
-                if merged_word in labels:
-                    sentence_words[i:i + 2] = [merged_word]
         title_sentences.append(sentence_words)
 
 

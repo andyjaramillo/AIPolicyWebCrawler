@@ -1,9 +1,12 @@
-virtual_reality
+virtual 
+reality
 vr
-artificial_intelligence
+artificial 
+intelligence
 Biotechnology
 ChatGPT
-machine_learning
+machine
+learning
 privacy
 health
 education
@@ -11,4 +14,5 @@ cybersecurity
 robotics
 finance
 space
-autonomous_vehicles
+autonomous
+vehicles
