@@ -43,7 +43,6 @@ def parse_links(url, html):
         href = link.get('href')
         # remove self-referencing links
         if href and not is_self_referencing(root_href, href):
-            # TODO we dont use the anchor text, we shoould remove it
             anchor_text = link.string
             # print('text', text)
             if not anchor_text:
@@ -165,7 +164,7 @@ def crawl(seed_links, wanted_content):
                             # if link matches the wanted content type, add it to the queue to search
                             if child_link.headers.get('Content-Type').split(';')[0].strip() in wanted_content or len(wanted_content) == 0: 
                                 if link not in visited:
-                                    # TODO should we limit the number of links we add to the queue that were found on the page?
+                                   
                                     queue.put(link)
                         except Exception as e:
                             print(e, link)
@@ -206,8 +205,6 @@ def read_queries_from_file(filename):
         return [query.strip() for query in queries]
 
 def run():
-    ###TODO Change this to list of queries from queries.txt
-    
 
     params = {
         "hl": "en",
@@ -217,8 +214,6 @@ def run():
         "api_key": api_key
     }
     
-    # print(params)
-    # returns JSON output
     search = GoogleSearch(params)
     # get JSON output as dictionary
     results = search.get_dict()
@@ -230,7 +225,6 @@ def run():
     # check for pdfs in the google search
     for result in organic_results:
         link = result["link"]
-        # TODO immprove methods to identify pdfs
         if not link.endswith('.pdf'):
             links.append(link) # extract links in the google search    
         else:
@@ -244,17 +238,7 @@ def run():
     # go through seed links and links extracted from google search
     visited, extracted = crawl(links, ["text/html"]) # crawl the google + seed links for pdfs
     extracted += pdfs # add pdfs from google search to the extracted list
-    writelines('links.txt', links) # see what links extracted from seed links + serpapi
-    # nonlocal_links = get_nonlocal_links(site)
-    # writelines('nonlocal.txt', nonlocal_links)
-    # res = request.urlopen(site)
-    # if len(sys.argv) > 3:
-    #     # then a parameter was passed in
-    #     header = sys.argv[4]
-    #     header.split(',')
-    #     headers_list = header
-
-    
+    writelines('links.txt', links) # see what links extracted from seed links + serpapi    
     writelines('visited.txt', visited)
     writelines('extracted.txt', extracted)
     return visited,extracted

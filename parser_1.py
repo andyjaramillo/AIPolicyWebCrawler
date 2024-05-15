@@ -39,12 +39,7 @@ def retrieve_PDF_text(pdf_urls, label_counter):
             pdf_file = BytesIO(response.read()) 
             pdf_reader = PyPDF2.PdfReader(pdf_file) 
             metadata = pdf_reader.metadata
-            print("Pdf pages", len(pdf_reader.pages))
             print("read pdf file")
-        # metadata['/CreationDate']
-        # metadata['/Author']
-        # metadata['/ModDate']
-        # metadata['/Title']
             # create a new document object for each page in the pdf
             for page_num in range(len(pdf_reader.pages)):
                 page_text = pdf_reader.pages[page_num].extract_text().strip().replace('\n', '').replace('\xa0', ' ') # Extract html from pdf
@@ -61,7 +56,6 @@ def retrieve_PDF_text(pdf_urls, label_counter):
 
 def parse_output():
     with open("extracted.txt", "r") as extracted_file:
-    # with open("sample_pdf_test.txt", "r") as extracted_file:
         logs = extracted_file.readlines()
     extracted = logs
     label_counter = 101
@@ -69,12 +63,8 @@ def parse_output():
     for line in extracted:
         current_line_array = line.strip().split(':')
         pdf_links.append(current_line_array[0] + ':' + current_line_array[1])
-        # print(pdf_links)
-        # print("got here 3")
     documents = retrieve_PDF_text(pdf_links, label_counter=label_counter) if len(pdf_links) > 0 else []
     return documents
-    # for link in links:
-    #     retrieve_PDF_text(link)
 
 if __name__ == "__main__":
     parse_output()
