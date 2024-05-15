@@ -241,6 +241,13 @@ def compute_doc_label_congregation(metrics):
 
 
 def compute_label_vector_map(labels, processed_docs):
+
+    """
+    Compute label vectors based on pdf corpus by:
+        1. Use word2vec to compute vectors for entire pdf.
+        2. For each label, compute tf-idf based on similarity scores above a given threshold
+    """
+
     ## turn labels into vector representation using the whole corpu
     tokenized_labels = [word_tokenize(label.lower()) for label in labels]
     all_sentences  = []
