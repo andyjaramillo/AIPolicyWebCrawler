@@ -81,24 +81,4 @@ def format_data(data):
         'urls': pdf_urls
         })
 
-    # matrixLabels=[]
-    # for pdf_dict in data:
-    #     matrixLabels.append(pdf_dict["list_of_label_lengths"])
-    
-    # matrix = np.array(matrixLabels)
-    # transposed_matrix = matrix.T
-    # averageLabels=[]
-    # for doc_label_bins in transposed_matrix:
-    #     bin_sum = 0
-    #     for bin_ in doc_label_bins:
-    #         bin_sum += bin_
-    #     average_label_length_for_doc = bin_sum/len(doc_label_bins)
-    #     averageLabels.append(average_label_length_for_doc)
-
-    # data_dict = []
-    # for i in range(average_length_of_docs):
-    #     if i < len(averageLabels)-1:
-    #         data_dict.append({"x": str(i), "y": str(0),"heat": averageLabels[i]})
-    #return json.dumps(data_dict)
-
 
