@@ -4,7 +4,7 @@ from io import BytesIO
 from datetime import datetime
 from model import Document
 import nltk
-import fitz
+# import fitz
 from nltk.tokenize import sent_tokenize
 from model import model
 from crawler import run
